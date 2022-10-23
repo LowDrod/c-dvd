@@ -14,7 +14,7 @@ $ sh ./build.sh
 
 | Shortcut | Action |
 | - |:- |
-| <kbd>Ctrl</kbd> c <kbd>S</kbd> | Stops the app |
+| <kbd>Ctrl</kbd> <kbd>C</kbd> | Stops the app |
 
 ## Options
 
