@@ -137,7 +137,7 @@ void file_dimensions(FILE *file){
     char c; 
     unsigned char uc;
 
-    for (c = getc(file); c != EOF; c = getc(file)){
+    for (c = getc(file); c != (char) EOF; c = getc(file)){
         if (c == '\n'){
             // ascii height
             ascii_y += 1;
@@ -207,7 +207,7 @@ void store_ascii(FILE *file){
     
     while(y < ascii_y){
         c = getc(file);
-        if (c != '\n' && c != EOF){
+        if (c != '\n' && c != (char) EOF){
             ascii_img[y][x++] = c;
             continue;
         }
