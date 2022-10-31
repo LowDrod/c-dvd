@@ -9,6 +9,8 @@
 
 //#define DEBUG                    // debug flag
 
+#define PROJECT_NAME "screensaver"
+
 // colors for debuging 
 #define CYAN    "\033[0;96m"
 #define RED     "\033[0;91m"
@@ -25,7 +27,7 @@
 unsigned char last_color = 0, current_color;
 unsigned char color_type = 3; // 4 == background // 3 == foreground
 
-unsigned int SLEEP_TIME;  // time between frames
+unsigned int SLEEP_TIME = (unsigned int)1000000 / (unsigned int)15; // time between frames
 
 unsigned short ascii_x;   // ascii widthz
 unsigned short ascii_y;   // ascii height
@@ -45,30 +47,50 @@ void loop_breaker(int bb) {
 // ----- ----- ----- ----- ----- PARSER ----- ----- ----- ----- ----- //
 // ----- ----- ----- ----- -----        ----- ----- ----- ----- ----- //
 
-bool parser(FILE **file, int argc, char *argv[]){
-    bool error = false, path = true, speed = true;
+void parser(FILE **file, int argc, char *argv[]){
+    bool error = false,
+        path = false,
+        speed = false;
 
     for (int i = 1; i < argc; i++){
-        // TODO: --help // -h
         // TODO: alternative to strcmp 
 
+        // ----- HELP ----- //
+        if (strcmp(argv[i],"-h") == 0){
+            printf(
+                "Usage: " PROJECT_NAME " [OPTIONS]...\n"
+                "\n"
+                "  -p [/path/to/file]     path to ascii file you wanna use\n"
+                "  -h                     show this help\n"
+                "  -s [number]            number of refresh per second\n"
+                "  -b                     makes the background change color\n"
+                "                         every time the ascii hit an edge\n"
+                "  -f                     makes the foreground change color\n"
+                "                         every time the ascii hit an edge\n"
+            );
+
+            if (path)
+                fclose(*file);
+            exit(0);
+        }
+
         // ----- PATH TO FILE ----- //
-        if (strcmp(argv[i],"-p") == 0){
+        else if (strcmp(argv[i],"-p") == 0){
             if (i+1 >= argc){
                 fprintf(stderr, "%sSYNTAX ERROR:%s Missing argument for \"%s\"\n", RED, RESET, argv[i]);
                 error = true;
                 continue;
             }
-            i++;
-            path = false;
-            *file = fopen(argv[i],"r");
+            path = true;
+            *file = fopen(argv[++i],"r");
             if (*file == NULL){
                 fprintf(stderr, "%sERROR:%s Could not open file %s\n", RED, RESET, argv[i]);
                 error = true;
             }
+        }
 
         // ----- SPEED ----- //
-        } else if (strcmp(argv[i],"-s") == 0){
+        else if (strcmp(argv[i],"-s") == 0){
             if (i+1 >= argc){
                 fprintf(stderr, "%sSYNTAX ERROR:%s Missing argument for \"%s\"\n", RED, RESET, argv[i]);
                 error = true;
@@ -82,19 +104,22 @@ bool parser(FILE **file, int argc, char *argv[]){
                 error = true;
                 continue;
             }
-            speed = false;
+            speed = true;
             SLEEP_TIME = (unsigned int)1000000 / (unsigned int)fps;
+        }
 
-        // BACKGROUND
-        } else if (strcmp(argv[i],"-b") == 0){
+        // ----- BACKGROUND ----- //
+        else if (strcmp(argv[i],"-b") == 0){
             color_type = 4;
+        }
 
-        // FOREGROUND
-        } else if (strcmp(argv[i],"-f") == 0){
+        // ----- FOREGROUND ----- //
+        else if (strcmp(argv[i],"-f") == 0){
             color_type = 3;
+        }
 
-        // DEFAULT //
-        } else {
+        // ----- DEFAULT ----- //
+        else {
             fprintf(stderr,"%sSYNTAX ERROR:%s Unknown argument: %s\n", RED, RESET, argv[i]);
             error = true;
         }
@@ -107,19 +132,18 @@ bool parser(FILE **file, int argc, char *argv[]){
     printf("\n");
     #endif
 
-    if (speed){
-        SLEEP_TIME = (unsigned int)1000000 / (unsigned int)15;
-    }
-    if (path){
+    if (!path){
         fprintf(stderr, "%sERROR:%s Path to file is required\n", RED, RESET);
         printf("%snote:%s You can specify the path by using \"-p /path/to/file\"\n", CYAN, RESET);
-        return 1;
+        if (path)
+            fclose(*file);
+        exit(1);
     }
     if (error){
-        return 1;
+        if (path)
+            fclose(*file);
+        exit(1);
     }
-
-    return 0;
 }
 
 // ----- ----- ----- ----- -----                 ----- ----- ----- ----- ----- //
@@ -129,10 +153,8 @@ bool parser(FILE **file, int argc, char *argv[]){
 void file_dimensions(FILE *file){
     ascii_x = ascii_px = 0, ascii_y = 1;
     
-    // real width
-    unsigned short tmp_x = 0;
-    // printable width
-    unsigned short tmp_px = 0;
+    // real width && printable width
+    unsigned short tmp_x = 0, tmp_px = 0;
 
     char c; 
     unsigned char uc;
@@ -172,6 +194,7 @@ void file_dimensions(FILE *file){
             }
         }
     }
+
     if (tmp_x > ascii_x){
         ascii_x = tmp_x;
     }
@@ -342,8 +365,7 @@ int main(int argc, char const *argv[]){
     srand(time(NULL)); // random seed
 
     FILE *file;
-    if (parser(&file,argc,(char**)argv))
-        return 1;
+    parser(&file,argc,(char**)argv);
     
     file_dimensions(file);
     fseek(file, 0, SEEK_SET);
