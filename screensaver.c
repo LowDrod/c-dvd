@@ -301,7 +301,7 @@ void show(void){
         }
 
         // screen too smol!
-        if (term_x < ascii_px + 10 || term_y < ascii_y){
+        if (term_x < ascii_px + 5 || term_y < ascii_y + 5){
             printf(WHITE BLACK_BCK ERASE_SCREEN TO_ZERO);
             printf("\033[%u;%uH",term_y/2,(term_x-17)/2); // 17 == smol message lenght
             printf("screen too smol!!");
@@ -314,19 +314,29 @@ void show(void){
             continue;
         }
 
-        if(pos_x < 1 || pos_x > term_x - ascii_px){
+        if (pos_x < 1){
             velocity_x *= -1;
+            pos_x = 2;
+            change_color();
+        } else if (pos_x > term_x - ascii_px + 1){
+            velocity_x *= -1;
+            pos_x = term_x - ascii_px;
             change_color();
         }
 
-        if(pos_y < 1 || pos_y > term_y - (ascii_y + 1)){
+        if (pos_y < 1){
             velocity_y *= -1;
+            pos_y = 2;
+            change_color();
+        } else if (pos_y > (term_y - ascii_y + 1)){
+            velocity_y *= -1;
+            pos_y = term_y - ascii_y;
             change_color();
         }
 
         printf(ERASE_SCREEN TO_ZERO);
         for (unsigned short i = 0; i < ascii_y; i++){
-            printf("\033[%u;%uH",pos_y+i+1,pos_x);
+            printf("\033[%u;%uH",pos_y+i,pos_x);
             printf("%s", ascii_img[i]);
             printf("\033[1B");
         }
