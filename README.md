@@ -20,14 +20,14 @@ $ sh ./build.sh
 
 ## Key Bindings
 
-| Shortcut                                     | Action        |
-| -------------------------------------------- | :------------ |
-| `<kbd>`Ctrl`</kbd>` `<kbd>`C`</kbd>` | Stops the app |
+| Shortcut                                       | Action        |
+| ---------------------------------------------- | :------------ |
+| `<kbd>`Ctrl `</kbd>` `<kbd>`C `</kbd>` | Stops the app |
 
 ## Options
 
 ```bash
-$ screensaver -h
+$ ./screensaver -h
 Usage: screensaver [OPTIONS]...
 
   -p [/path/to/file]     path to ascii file you wanna use
