@@ -7,22 +7,23 @@
 #include <time.h>
 #include <unistd.h>
 
-//#define DEBUG                    // debug flag
+// debug flag
+// #define DEBUG
 
 #define PROJECT_NAME "screensaver"
 
 // colors for debuging 
+#define WHITE   "\033[0;97m"
 #define CYAN    "\033[0;96m"
 #define RED     "\033[0;91m"
 #define MAGENTA "\033[0;95m"
-#define RESET   "\033[0m"        // reset color to default
+#define RESET   "\033[0m"             // reset color to default
 
-#define ERASE_SCREEN "\033[2J"   // erase entire screen
-#define TO_ZERO      "\033[H"    // moves cursor to home position (0, 0)
-#define CURSOR_TRUE  "\033[?25h" // cursor visiblility: TRUE
-#define CURSOR_FALSE "\033[?25l" // cursor visiblility: FALSE
-
-#define SMOL "screen too smol!!"
+#define ERASE_SCREEN "\033[2J"        // erase entire screen
+#define TO_ZERO      "\033[H"         // moves cursor to home position (0, 0)
+#define CURSOR_TRUE  "\033[?25h"      // cursor visiblility: TRUE
+#define CURSOR_FALSE "\033[?25l"      // cursor visiblility: FALSE
+#define BLACK_BCK    "\033[48;5;0m"   // black background
 
 unsigned char last_color = 0, current_color;
 unsigned char color_type = 3; // 4 == background // 3 == foreground
@@ -281,11 +282,7 @@ void show(void){
     // velocity + direction
     char velocity_x = 1, velocity_y = 1;
 
-    // handler for "ctrl + c"
-    signal(SIGINT, loop_breaker);
-
-    printf(CURSOR_FALSE);
-    printf("\033[48;5;0m"); // black background
+    printf(CURSOR_FALSE BLACK_BCK);
 
     while (running) {
         ioctl(0, TIOCGWINSZ, &w);
@@ -293,6 +290,7 @@ void show(void){
         fflush(stdout);
         usleep(SLEEP_TIME);
 
+        // if the terminal size change
         if(last_ws_col != term_x || last_ws_row != term_y){
             pos_x = pos_y = 1;
             velocity_x = velocity_y = 1;
@@ -302,9 +300,12 @@ void show(void){
             continue;
         }
 
+        // screen too smol!
         if (term_x < ascii_px + 10 || term_y < ascii_y){
-            // TODO: Message "too smol!", but better    
-            printf(ERASE_SCREEN TO_ZERO "%s%s",SMOL,RESET);
+            printf(WHITE BLACK_BCK ERASE_SCREEN TO_ZERO);
+            printf("\033[%u;%uH",term_y/2,(term_x-17)/2); // 17 == smol message lenght
+            printf("screen too smol!!");
+
             pos_x = pos_y = 1;
             velocity_x = velocity_y = 1;
 
@@ -341,6 +342,26 @@ void show(void){
 }
 
 // ----- ----- ----- ----- -----            ----- ----- ----- ----- ----- //
+// ----- ----- ----- ----- ----- ASCII_FREE ----- ----- ----- ----- ----- //
+// ----- ----- ----- ----- -----            ----- ----- ----- ----- ----- //
+
+void ascii_free(){
+    for (unsigned short i = 0; i < ascii_y;i ++){
+        free(ascii_img[i]);
+
+        #if defined(DEBUG)
+        printf("%sDEBUG:%s free(ascii_img[%hu])\n", MAGENTA, RESET, i);
+        #endif
+    }
+    free(ascii_img);
+    
+    #if defined(DEBUG)
+    printf("%sDEBUG:%s free(ascii_img)\n", MAGENTA, RESET);
+    printf("\n");
+    #endif
+}
+
+// ----- ----- ----- ----- -----            ----- ----- ----- ----- ----- //
 // ----- ----- ----- ----- ----- DEBUG_ARGS ----- ----- ----- ----- ----- //
 // ----- ----- ----- ----- -----            ----- ----- ----- ----- ----- //
 
@@ -372,24 +393,14 @@ int main(int argc, char const *argv[]){
     store_ascii(file);
     fclose(file); // RIP, not necessary any more :c
 
+    // handler for "ctrl + c"
+    signal(SIGINT, loop_breaker);
+
     #if !defined(DEBUG)
     show();
     #endif
 
-    // free() zone
-    for (unsigned short i = 0; i < ascii_y;i ++){
-        free(ascii_img[i]);
-
-        #if defined(DEBUG)
-        printf("%sDEBUG:%s free(ascii_img[%hu])\n", MAGENTA, RESET, i);
-        #endif
-    }
-    free(ascii_img);
-    
-    #if defined(DEBUG)
-    printf("%sDEBUG:%s free(ascii_img)\n", MAGENTA, RESET);
-    printf("\n");
-    #endif
+    ascii_free();
     
     #if defined(DEBUG)
     printf("%sDEBUG:%s END\n", MAGENTA, RESET);
