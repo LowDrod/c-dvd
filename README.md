@@ -2,7 +2,7 @@
 
 A bouncing DVD logo for the terminal
 
-https://user-images.githubusercontent.com/89943290/210120948-529fa979-84b3-414f-9c38-ce1e468cc33d.mp4
+[![asciicast](https://asciinema.org/a/uKEigrv9gNmBUixz2F15SmvnY.svg)](https://asciinema.org/a/uKEigrv9gNmBUixz2F15SmvnY)
 
 ## Build and run
 
