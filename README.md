@@ -2,7 +2,7 @@
 
 A bouncing DVD logo for the terminal
 
-![video](https://github.com/LowDrod/c-dvd/video.mp4)
+![video](https://github.com/LowDrod/c-dvd/raw/main/video.mp4)
 
 ## Build and run
 
