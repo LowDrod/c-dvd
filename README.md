@@ -2,9 +2,7 @@
 
 A bouncing DVD logo for the terminal
 
-<video width="600" controls>
-  <source alt="video" src="https://github.com/LowDrod/c-dvd/raw/main/video.mp4" type="video/mp4"/>
-</video>
+https://user-images.githubusercontent.com/89943290/210120948-529fa979-84b3-414f-9c38-ce1e468cc33d.mp4
 
 ## Build and run
 
